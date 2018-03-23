@@ -1,4 +1,4 @@
-package ocrddta
+package corpus
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package ocrddta
+package corpus
 
 // CharTriple represents a sequece of
 // three characters.
