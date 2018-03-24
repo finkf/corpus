@@ -5,8 +5,7 @@ import "unicode"
 // Tokener defines the interface for things that read
 // a stream of tokens. If an error occurs, Err returns a non-nil value.
 type Tokener interface {
-	Tokens() <-chan Token
-	Err() error
+	Tokens(func(Token)) error
 }
 
 // TokenType represents the type of a token
