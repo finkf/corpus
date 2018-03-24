@@ -3,10 +3,13 @@ package corpus
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 	"testing/iotest"
+
+	"github.com/pkg/errors"
 )
 
 // we do not care about closing the file.
@@ -19,11 +22,35 @@ func openDTATestFile(t *testing.T) io.ReadCloser {
 	return is
 }
 
-func TestDTAErrorRead(t *testing.T) {
-	r := iotest.TimeoutReader(openDTATestFile(t))
-	err := DTAReadTokens(r, func(Token) {})
-	if err == nil {
-		t.Fatalf("expected an error; got nil")
+func closeError(t *testing.T) io.ReadCloser {
+	return errCloser(openDTATestFile(t))
+}
+
+func readError(t *testing.T) io.ReadCloser {
+	return ioutil.NopCloser(iotest.TimeoutReader(openDTATestFile(t)))
+}
+
+func readAndCloseError(t *testing.T) io.ReadCloser {
+	return errCloser(readError(t))
+}
+
+func TestDTAErrors(t *testing.T) {
+	tests := []struct {
+		reader func(*testing.T) io.ReadCloser
+		want   error
+	}{
+		{closeError, errClose},
+		{readError, iotest.ErrTimeout},
+		{readAndCloseError, iotest.ErrTimeout},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("%T", tc.reader), func(t *testing.T) {
+			r := tc.reader(t)
+			err := DTAReadTokensAndClose(r, func(Token) {})
+			if errors.Cause(err) != tc.want {
+				t.Fatalf("expected %s; got %v", tc.want, err)
+			}
+		})
 	}
 }
 
@@ -60,3 +87,16 @@ func TestDTARead(t *testing.T) {
 		})
 	}
 }
+
+func errCloser(r io.Reader) io.ReadCloser {
+	return errCloserS{r}
+}
+
+type errCloserS struct {
+	r io.Reader
+}
+
+var errClose = errors.New("close")
+
+func (r errCloserS) Read(bs []byte) (int, error) { return r.r.Read(bs) }
+func (r errCloserS) Close() error                { return errClose }

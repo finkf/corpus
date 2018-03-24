@@ -9,10 +9,15 @@ import (
 
 // DTAReadTokensAndClose is a conveniece function that reads
 // all tokens in a DTA file and closes the reader.
-// The error of the call to close is ignored.
-func DTAReadTokensAndClose(r io.ReadCloser, f func(Token)) error {
-	defer func() { _ = r.Close() }()
-	return DTAReadTokens(r, f)
+func DTAReadTokensAndClose(r io.ReadCloser, f func(Token)) (err error) {
+	defer func() {
+		e2 := r.Close()
+		if e2 != nil && err == nil {
+			err = e2
+		}
+	}()
+	err = DTAReadTokens(r, f)
+	return
 }
 
 // DTAReadTokens reads all tokens form a DTA corpus file.
