@@ -16,11 +16,11 @@ func TestToken(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.token, func(t *testing.T) {
-			tt := Token{tc.token}
+			tt := Token(tc.token)
 			if got := tt.Type(); got != tc.typ {
 				t.Fatalf("expected %d; got %d", got, tc.typ)
 			}
-			if got := tt.String(); got != tc.token {
+			if got := string(tt); got != tc.token {
 				t.Fatalf("expeceted %q; got %q", tc.token, got)
 			}
 		})

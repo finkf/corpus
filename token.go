@@ -22,21 +22,15 @@ const (
 )
 
 // Token represents a token.
-type Token struct {
-	Str string
-}
-
-func (t Token) String() string {
-	return t.Str
-}
+type Token string
 
 // Type returns the TokenType of the token.
 func (t Token) Type() TokenType {
-	if len(t.Str) == 0 {
+	if len(t) == 0 {
 		return Empty
 	}
 	typ := Empty
-	for _, r := range t.Str {
+	for _, r := range t {
 		tmp := runeType(r)
 		if typ != Empty && typ != tmp {
 			return Mixed
