@@ -11,6 +11,7 @@ func TestEachChar3Gram(t *testing.T) {
 		test string
 		want []string
 	}{
+		{",", nil},
 		{"ab", nil},
 		{"abc", []string{"abc"}},
 		{"abcd", []string{"abc", "bcd"}},
