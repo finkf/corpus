@@ -13,6 +13,7 @@ func TestToken(t *testing.T) {
 		{",", Punctuation},
 		{"mixed-word", Mixed},
 		{"Caſparis", Word},
+		{"Ängste", Word},
 	}
 	for _, tc := range tests {
 		t.Run(tc.token, func(t *testing.T) {
