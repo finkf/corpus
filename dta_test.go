@@ -21,7 +21,7 @@ func openDTATestFile(t *testing.T) io.ReadCloser {
 
 func TestDTAErrorRead(t *testing.T) {
 	r := iotest.TimeoutReader(openDTATestFile(t))
-	err := dtaReadTokens(r, func(Token) {})
+	err := DTAReadTokens(r, func(Token) {})
 	if err == nil {
 		t.Fatalf("expected an error; got nil")
 	}
@@ -40,7 +40,7 @@ func TestDTARead(t *testing.T) {
 			r := openDTATestFile(t)
 			var got []string
 			var skipped, taken int
-			err := dtaReadTokensAndClose(r, func(t Token) {
+			err := DTAReadTokensAndClose(r, func(t Token) {
 				if skipped < tc.skip {
 					skipped++
 					return

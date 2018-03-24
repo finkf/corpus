@@ -7,12 +7,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-func dtaReadTokensAndClose(r io.ReadCloser, f func(Token)) error {
+// DTAReadTokensAndClose is a conveniece function that reads
+// all tokens in a DTA file and closes the reader.
+// The error of the call to close is ignored.
+func DTAReadTokensAndClose(r io.ReadCloser, f func(Token)) error {
 	defer func() { _ = r.Close() }()
-	return dtaReadTokens(r, f)
+	return DTAReadTokens(r, f)
 }
 
-func dtaReadTokens(r io.Reader, f func(Token)) error {
+// DTAReadTokens reads all tokens form a DTA corpus file.
+func DTAReadTokens(r io.Reader, f func(Token)) error {
 	d := xml.NewDecoder(r)
 	var err error
 	var t xml.Token
