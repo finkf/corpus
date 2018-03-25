@@ -58,6 +58,7 @@ type jsonMap struct {
 	NGrams     map[string]uint64
 }
 
+// MarshalJSON implements JSON marshaling.
 func (m *Char3Grams) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		jsonMap{
@@ -67,6 +68,7 @@ func (m *Char3Grams) MarshalJSON() ([]byte, error) {
 		})
 }
 
+// UnmarshalJSON implements JSON unmarshaling.
 func (m *Char3Grams) UnmarshalJSON(bs []byte) error {
 	var tmp jsonMap
 	if err := json.Unmarshal(bs, &tmp); err != nil {
