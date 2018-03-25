@@ -15,19 +15,21 @@ func NewChar3Grams() *Char3Grams {
 
 // AddAll adds all character 3-grams of the
 // supplied string into the map.
-func (m *Char3Grams) AddAll(str string) {
+func (m *Char3Grams) AddAll(str string) *Char3Grams {
 	EachChar3Gram(str, func(str string) {
 		m.m[str]++
 		m.n++
 	})
+	return m
 }
 
 // Add3Grams adds the 3-grams of anohter map to this.
-func (m *Char3Grams) Add3Grams(o *Char3Grams) {
+func (m *Char3Grams) Add3Grams(o *Char3Grams) *Char3Grams {
 	for k, v := range o.m {
 		m.m[k] += v
 	}
 	m.n += o.n
+	return m
 }
 
 // Get returns the number of the supplied 3-gram.
