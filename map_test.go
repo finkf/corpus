@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -84,6 +85,7 @@ func TestChar3GramMapAdd(t *testing.T) {
 func TestChar3GramsJSONMarshal(t *testing.T) {
 	tests := []struct{ test string }{
 		{"abcde"},
+		{"Waſſer"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
@@ -98,6 +100,21 @@ func TestChar3GramsJSONMarshal(t *testing.T) {
 			}
 			if !reflect.DeepEqual(a, &b) {
 				t.Fatalf("expected %v; got %v", a, b)
+			}
+		})
+	}
+}
+
+func TestChar3GramsJSONUnarshalError(t *testing.T) {
+	tests := []struct{ test string }{
+		{`{"Total":"1","NGrams":{"abc":1}}`},
+	}
+	for _, tc := range tests {
+		t.Run(tc.test, func(t *testing.T) {
+			var m Char3Grams
+			err := json.NewDecoder(strings.NewReader(tc.test)).Decode(&m)
+			if err == nil {
+				t.Fatalf("expected an error; got nil")
 			}
 		})
 	}
