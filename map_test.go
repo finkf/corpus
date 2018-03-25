@@ -1,6 +1,8 @@
 package corpus
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
@@ -74,6 +76,28 @@ func TestChar3GramMapAdd(t *testing.T) {
 			}
 			if got := a.Total(); got != tc.total {
 				t.Fatalf("expected %d; got %d", tc.want, got)
+			}
+		})
+	}
+}
+
+func TestChar3GramsJSONMarshal(t *testing.T) {
+	tests := []struct{ test string }{
+		{"abcde"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.test, func(t *testing.T) {
+			a := NewChar3Grams().AddAll(tc.test)
+			buf := &bytes.Buffer{}
+			if err := json.NewEncoder(buf).Encode(a); err != nil {
+				t.Fatalf("got error: %v", err)
+			}
+			var b Char3Grams
+			if err := json.NewDecoder(buf).Decode(&b); err != nil {
+				t.Fatalf("got error: %v", err)
+			}
+			if !reflect.DeepEqual(a, &b) {
+				t.Fatalf("expected %v; got %v", a, b)
 			}
 		})
 	}

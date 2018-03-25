@@ -1,5 +1,7 @@
 package corpus
 
+import "encoding/json"
+
 // Char3Grams is a map character triple counts
 type Char3Grams struct {
 	n uint64
@@ -49,6 +51,32 @@ func (m *Char3Grams) Total() uint64 {
 // Len return the number of different 3-grams in the map.
 func (m *Char3Grams) Len() uint64 {
 	return uint64(len(m.m))
+}
+
+type jsonMap struct {
+	Total, Len uint64
+	NGrams     map[string]uint64
+}
+
+func (m *Char3Grams) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		jsonMap{
+			Total:  m.Total(),
+			Len:    m.Len(),
+			NGrams: m.m,
+		})
+}
+
+func (m *Char3Grams) UnmarshalJSON(bs []byte) error {
+	var tmp jsonMap
+	if err := json.Unmarshal(bs, &tmp); err != nil {
+		return err
+	}
+	*m = Char3Grams{
+		n: tmp.Total,
+		m: tmp.NGrams,
+	}
+	return nil
 }
 
 // EachChar3Gram iterates of all character 3-grams in the given string.
