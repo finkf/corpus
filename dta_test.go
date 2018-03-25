@@ -4,23 +4,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"reflect"
 	"testing"
 	"testing/iotest"
 
 	"github.com/pkg/errors"
 )
-
-// we do not care about closing the file.
-func openDTATestFile(t *testing.T) io.ReadCloser {
-	t.Helper()
-	is, err := os.Open("testdata/dta.xml")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
-	}
-	return is
-}
 
 func closeError(t *testing.T) io.ReadCloser {
 	return errCloser(openDTATestFile(t))
