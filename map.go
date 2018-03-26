@@ -109,3 +109,33 @@ func add3Gram(pos []int, str string, f func(string)) {
 	e := pos[len(pos)-1]
 	f(str[s:e])
 }
+
+// Unigrams represents the absolute unigram frequencies.
+type Unigrams struct {
+	unigrams map[string]uint64
+	total    uint64
+}
+
+// Add adds a unigram to the map.
+func (u *Unigrams) Add(unigram string) *Unigrams {
+	if u.unigrams == nil {
+		u.unigrams = make(map[string]uint64)
+	}
+	u.unigrams[unigram]++
+	u.total++
+	return u
+}
+
+// Total returns the total number of unigrams in the map.
+func (u *Unigrams) Total() uint64 {
+	return u.total
+}
+
+// Get returns the count for the given unigram.
+func (u *Unigrams) Get(unigram string) uint64 {
+	count, ok := u.unigrams[unigram]
+	if !ok {
+		return 0
+	}
+	return count
+}

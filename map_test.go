@@ -141,3 +141,30 @@ func TestChar3GramsEach(t *testing.T) {
 		})
 	}
 }
+
+func TestAddUnigrams(t *testing.T) {
+	tests := []struct {
+		unigrams     []string
+		search       string
+		count, total uint64
+	}{
+		{nil, "ab", 0, 0},
+		{[]string{"ab", "cd", "ab"}, "ab", 2, 3},
+		{[]string{"ab", "cd", "ab"}, "cd", 1, 3},
+		{[]string{"ab", "cd", "ab"}, "xy", 0, 3},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("%v", tc.unigrams), func(t *testing.T) {
+			u := &Unigrams{}
+			for _, unigram := range tc.unigrams {
+				u.Add(unigram)
+			}
+			if got := u.Get(tc.search); got != tc.count {
+				t.Fatalf("expected %d; got %d", tc.count, got)
+			}
+			if got := u.Total(); got != tc.total {
+				t.Fatalf("expcted %d; got %d", tc.total, got)
+			}
+		})
+	}
+}
