@@ -156,9 +156,7 @@ func TestAddUnigrams(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("%v", tc.unigrams), func(t *testing.T) {
 			u := &Unigrams{}
-			for _, unigram := range tc.unigrams {
-				u.Add(unigram)
-			}
+			u.Add(tc.unigrams...)
 			if got := u.Get(tc.search); got != tc.count {
 				t.Fatalf("expected %d; got %d", tc.count, got)
 			}

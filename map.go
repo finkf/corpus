@@ -117,12 +117,14 @@ type Unigrams struct {
 }
 
 // Add adds a unigram to the map.
-func (u *Unigrams) Add(unigram string) *Unigrams {
-	if u.unigrams == nil {
+func (u *Unigrams) Add(us ...string) *Unigrams {
+	if u.unigrams == nil && len(us) > 0 {
 		u.unigrams = make(map[string]uint64)
 	}
-	u.unigrams[unigram]++
-	u.total++
+	for _, unigram := range us {
+		u.unigrams[unigram]++
+		u.total++
+	}
 	return u
 }
 
