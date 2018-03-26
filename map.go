@@ -116,8 +116,9 @@ type Unigrams struct {
 	total    uint64
 }
 
-// Add adds a unigram to the map.
+// Add adds a range of unigrams to the map.
 func (u *Unigrams) Add(us ...string) *Unigrams {
+	// No check for nil since it is an error to call Add on nil.
 	if u.unigrams == nil && len(us) > 0 {
 		u.unigrams = make(map[string]uint64)
 	}
@@ -130,14 +131,133 @@ func (u *Unigrams) Add(us ...string) *Unigrams {
 
 // Total returns the total number of unigrams in the map.
 func (u *Unigrams) Total() uint64 {
+	if u == nil {
+		return 0
+	}
 	return u.total
+}
+
+// Len returns the total number different unigrams in the map.
+func (u *Unigrams) Len() uint64 {
+	if u == nil {
+		return 0
+	}
+	return uint64(len(u.unigrams))
 }
 
 // Get returns the count for the given unigram.
 func (u *Unigrams) Get(unigram string) uint64 {
+	if u == nil {
+		return 0
+	}
 	count, ok := u.unigrams[unigram]
 	if !ok {
 		return 0
 	}
 	return count
+}
+
+// Bigrams represents a map of token 2-grams.
+type Bigrams struct {
+	bigrams map[string]*Unigrams
+	total   uint64
+}
+
+// Add adds a range of bigrams to the map.
+func (b *Bigrams) Add(bs ...string) *Bigrams {
+	// No check for nil since it is an error to call Add on nil.
+	if b.bigrams == nil && len(bs) > 1 {
+		b.bigrams = make(map[string]*Unigrams)
+	}
+	for i := 1; i < len(bs); i++ {
+		first := bs[i-1]
+		second := bs[i]
+		if _, ok := b.bigrams[first]; !ok {
+			b.bigrams[first] = new(Unigrams)
+		}
+		b.bigrams[first].Add(second)
+		b.total++
+	}
+	return b
+}
+
+// Total returns the total number of bigrams in the map.
+func (b *Bigrams) Total() uint64 {
+	if b == nil {
+		return 0
+	}
+	return b.total
+}
+
+// Len returns the total number of different unigrams in the map.
+func (b *Bigrams) Len() uint64 {
+	if b == nil {
+		return 0
+	}
+	return uint64(len(b.bigrams))
+}
+
+// Get returns the unigrams for the given head of a bigram.
+func (b *Bigrams) Get(first string) *Unigrams {
+	if b == nil {
+		return nil
+	}
+	unigrams, ok := b.bigrams[first]
+	if !ok {
+		return nil
+	}
+	return unigrams
+}
+
+// Trigrams represents a map of token 3-grams.
+type Trigrams struct {
+	trigrams map[string]*Bigrams
+	total    uint64
+}
+
+// Add adds a range of trigrams to the map.
+func (t *Trigrams) Add(bs ...string) *Trigrams {
+	// No check for nil since it is an error to call Add on nil.
+	if t.trigrams == nil && len(bs) > 2 {
+		t.trigrams = make(map[string]*Bigrams)
+	}
+	for i := 2; i < len(bs); i++ {
+		first := bs[i-2]
+		second := bs[i-1]
+		third := bs[i]
+		if _, ok := t.trigrams[first]; !ok {
+			t.trigrams[first] = new(Bigrams)
+		}
+		t.trigrams[first].Add(second, third)
+		t.total++
+	}
+	return t
+}
+
+// Total returns the total number of trigrams in the map.
+func (t *Trigrams) Total() uint64 {
+	if t == nil {
+		return 0
+	}
+	return t.total
+}
+
+// Len returns the total number of different bigrams in the map.
+func (t *Trigrams) Len() uint64 {
+	if t == nil {
+		return 0
+	}
+	return uint64(len(t.trigrams))
+}
+
+// Get returns the Bigrams for the given head of a trigram.
+func (t *Trigrams) Get(first string) *Bigrams {
+	if t == nil {
+		return nil
+	}
+	bigrams, ok := t.trigrams[first]
+	if !ok {
+		return nil
+	}
+	return bigrams
 }

@@ -142,26 +142,80 @@ func TestChar3GramsEach(t *testing.T) {
 	}
 }
 
-func TestAddUnigrams(t *testing.T) {
+func TestUnigrams(t *testing.T) {
 	tests := []struct {
-		unigrams     []string
-		search       string
-		count, total uint64
+		unigrams          *Unigrams
+		search            string
+		count, total, len uint64
 	}{
-		{nil, "ab", 0, 0},
-		{[]string{"ab", "cd", "ab"}, "ab", 2, 3},
-		{[]string{"ab", "cd", "ab"}, "cd", 1, 3},
-		{[]string{"ab", "cd", "ab"}, "xy", 0, 3},
+		{nil, "ab", 0, 0, 0},
+		{new(Unigrams).Add("ab", "cd", "ab"), "ab", 2, 3, 2},
+		{new(Unigrams).Add("ab", "cd", "ab"), "cd", 1, 3, 2},
+		{new(Unigrams).Add("ab", "cd", "ab"), "xy", 0, 3, 2},
 	}
 	for _, tc := range tests {
-		t.Run(fmt.Sprintf("%v", tc.unigrams), func(t *testing.T) {
-			u := &Unigrams{}
-			u.Add(tc.unigrams...)
-			if got := u.Get(tc.search); got != tc.count {
+		t.Run(fmt.Sprintf("%s", tc.search), func(t *testing.T) {
+			if got := tc.unigrams.Get(tc.search); got != tc.count {
 				t.Fatalf("expected %d; got %d", tc.count, got)
 			}
-			if got := u.Total(); got != tc.total {
+			if got := tc.unigrams.Total(); got != tc.total {
 				t.Fatalf("expcted %d; got %d", tc.total, got)
+			}
+			if got := tc.unigrams.Len(); got != tc.len {
+				t.Fatalf("expcted %d; got %d", tc.len, got)
+			}
+		})
+	}
+}
+
+func TestBigrams(t *testing.T) {
+	tests := []struct {
+		bigrams           *Bigrams
+		first, second     string
+		count, total, len uint64
+	}{
+		{nil, "ab", "cd", 0, 0, 0},
+		{new(Bigrams).Add("ab", "cd", "ab"), "ab", "cd", 1, 2, 2},
+		{new(Bigrams).Add("ab", "cd", "ab"), "cd", "ab", 1, 2, 2},
+		{new(Bigrams).Add("ab", "cd", "ab"), "ab", "xy", 0, 2, 2},
+		{new(Bigrams).Add("ab", "cd", "ab"), "xy", "ab", 0, 2, 2},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("%s %s", tc.first, tc.second), func(t *testing.T) {
+			if got := tc.bigrams.Get(tc.first).Get(tc.second); got != tc.count {
+				t.Fatalf("expected %d; got %d", tc.count, got)
+			}
+			if got := tc.bigrams.Total(); got != tc.total {
+				t.Fatalf("expcted %d; got %d", tc.total, got)
+			}
+			if got := tc.bigrams.Len(); got != tc.len {
+				t.Fatalf("expcted %d; got %d", tc.len, got)
+			}
+		})
+	}
+}
+
+func TestTrigrams(t *testing.T) {
+	tests := []struct {
+		trigrams             *Trigrams
+		first, second, third string
+		count, total, len    uint64
+	}{
+		{nil, "ab", "cd", "ef", 0, 0, 0},
+		{new(Trigrams).Add("ab", "cd", "ab"), "ab", "cd", "ab", 1, 1, 1},
+		{new(Trigrams).Add("ab", "cd", "ab"), "ab", "xy", "ab", 0, 1, 1},
+		{new(Trigrams).Add("ab", "cd", "ab"), "xy", "xy", "ab", 0, 1, 1},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("%s %s", tc.first, tc.second), func(t *testing.T) {
+			if got := tc.trigrams.Get(tc.first).Get(tc.second).Get(tc.third); got != tc.count {
+				t.Fatalf("expected %d; got %d", tc.count, got)
+			}
+			if got := tc.trigrams.Total(); got != tc.total {
+				t.Fatalf("expcted %d; got %d", tc.total, got)
+			}
+			if got := tc.trigrams.Len(); got != tc.len {
+				t.Fatalf("expcted %d; got %d", tc.len, got)
 			}
 		})
 	}
