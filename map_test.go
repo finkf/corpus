@@ -119,3 +119,25 @@ func TestChar3GramsJSONUnarshalError(t *testing.T) {
 		})
 	}
 }
+
+func TestChar3GramsEach(t *testing.T) {
+	tests := []struct {
+		test, search string
+		want         int
+	}{
+		{"abca", "a", 2},
+	}
+	for _, tc := range tests {
+		t.Run(tc.test, func(t *testing.T) {
+			var got int
+			NewChar3Grams().AddAll(tc.test).Each(func(k string, v uint64) {
+				if strings.Contains(k, tc.search) {
+					got += int(v)
+				}
+			})
+			if got != tc.want {
+				t.Fatalf("expected %d; got %d", tc.want, got)
+			}
+		})
+	}
+}

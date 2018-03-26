@@ -53,6 +53,14 @@ func (m *Char3Grams) Len() uint64 {
 	return uint64(len(m.m))
 }
 
+// Each iterates over all character 3-grams in this map.
+func (m *Char3Grams) Each(f func(string, uint64)) *Char3Grams {
+	for k, v := range m.m {
+		f(k, v)
+	}
+	return m
+}
+
 type jsonMap struct {
 	Total, Len uint64
 	NGrams     map[string]uint64
