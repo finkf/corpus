@@ -54,11 +54,13 @@ func (m *Char3Grams) Len() uint64 {
 }
 
 // Each iterates over all character 3-grams in this map.
-func (m *Char3Grams) Each(f func(string, uint64)) *Char3Grams {
+func (m *Char3Grams) Each(f func(string, uint64)) {
+	if m == nil {
+		return
+	}
 	for k, v := range m.m {
 		f(k, v)
 	}
-	return m
 }
 
 type jsonMap struct {
@@ -129,6 +131,21 @@ func (u *Unigrams) Add(us ...string) *Unigrams {
 	return u
 }
 
+// AddUnigrams adds all unigrams to the map
+func (u *Unigrams) AddUnigrams(o *Unigrams) *Unigrams {
+	if o == nil {
+		return u
+	}
+	if u.unigrams == nil && len(o.unigrams) > 0 {
+		u.unigrams = make(map[string]uint64)
+	}
+	for k, v := range o.unigrams {
+		u.unigrams[k] += v
+	}
+	u.total += o.total
+	return u
+}
+
 // Total returns the total number of unigrams in the map.
 func (u *Unigrams) Total() uint64 {
 	if u == nil {
@@ -157,6 +174,45 @@ func (u *Unigrams) Get(unigram string) uint64 {
 	return count
 }
 
+// Each calls the supplied callback function for each
+// entry in the map.
+func (u *Unigrams) Each(f func(string, uint64)) {
+	if u == nil {
+		return
+	}
+	for k, v := range u.unigrams {
+		f(k, v)
+	}
+}
+
+type jsonUnigrams struct {
+	Total, Len uint64
+	Unigrams   map[string]uint64
+}
+
+// MarshalJSON implements JSON marshaling.
+func (u *Unigrams) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		jsonUnigrams{
+			Total:    u.total,
+			Len:      u.Len(),
+			Unigrams: u.unigrams,
+		})
+}
+
+// UnmarshalJSON implements JSON unmarshaling.
+func (u *Unigrams) UnmarshalJSON(bs []byte) error {
+	var tmp jsonUnigrams
+	if err := json.Unmarshal(bs, &tmp); err != nil {
+		return err
+	}
+	*u = Unigrams{
+		total:    tmp.Total,
+		unigrams: tmp.Unigrams,
+	}
+	return nil
+}
+
 // Bigrams represents a map of token 2-grams.
 type Bigrams struct {
 	bigrams map[string]*Unigrams
@@ -178,6 +234,30 @@ func (b *Bigrams) Add(bs ...string) *Bigrams {
 		b.bigrams[first].Add(second)
 		b.total++
 	}
+	return b
+}
+
+// AddBigrams adds all bigrams to the map.
+func (b *Bigrams) AddBigrams(o *Bigrams) *Bigrams {
+	if o == nil {
+		return b
+	}
+	for k, v := range o.bigrams {
+		b.AddUnigrams(k, v)
+	}
+	return b
+}
+
+// AddUnigrams adds the unigrams for the given key into the map
+func (b *Bigrams) AddUnigrams(k string, u *Unigrams) *Bigrams {
+	if b.bigrams == nil {
+		b.bigrams = make(map[string]*Unigrams)
+	}
+	if _, ok := b.bigrams[k]; !ok {
+		b.bigrams[k] = new(Unigrams)
+	}
+	b.bigrams[k].AddUnigrams(u)
+	b.total += u.total
 	return b
 }
 
@@ -209,6 +289,45 @@ func (b *Bigrams) Get(first string) *Unigrams {
 	return unigrams
 }
 
+// Each calls the supplied callback function for each
+// entry in the map.
+func (b *Bigrams) Each(f func(string, *Unigrams)) {
+	if b == nil {
+		return
+	}
+	for k, v := range b.bigrams {
+		f(k, v)
+	}
+}
+
+type jsonBigrams struct {
+	Total, Len uint64
+	Bigrams    map[string]*Unigrams
+}
+
+// MarshalJSON implements JSON marshaling.
+func (b *Bigrams) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		jsonBigrams{
+			Total:   b.total,
+			Len:     b.Len(),
+			Bigrams: b.bigrams,
+		})
+}
+
+// UnmarshalJSON implements JSON unmarshaling.
+func (b *Bigrams) UnmarshalJSON(bs []byte) error {
+	var tmp jsonBigrams
+	if err := json.Unmarshal(bs, &tmp); err != nil {
+		return err
+	}
+	*b = Bigrams{
+		total:   tmp.Total,
+		bigrams: tmp.Bigrams,
+	}
+	return nil
+}
+
 // Trigrams represents a map of token 3-grams.
 type Trigrams struct {
 	trigrams map[string]*Bigrams
@@ -231,6 +350,30 @@ func (t *Trigrams) Add(bs ...string) *Trigrams {
 		t.trigrams[first].Add(second, third)
 		t.total++
 	}
+	return t
+}
+
+// AddTrigrams adds the trigrams to the map.
+func (t *Trigrams) AddTrigrams(o *Trigrams) *Trigrams {
+	if o == nil {
+		return t
+	}
+	for k, v := range o.trigrams {
+		t.AddBigrams(k, v)
+	}
+	return t
+}
+
+// AddBigrams adds a key with its bigrams into the map.
+func (t *Trigrams) AddBigrams(k string, b *Bigrams) *Trigrams {
+	if t.trigrams == nil {
+		t.trigrams = make(map[string]*Bigrams)
+	}
+	if _, ok := t.trigrams[k]; !ok {
+		t.trigrams[k] = new(Bigrams)
+	}
+	t.trigrams[k].AddBigrams(b)
+	t.total += b.total
 	return t
 }
 
@@ -260,4 +403,43 @@ func (t *Trigrams) Get(first string) *Bigrams {
 		return nil
 	}
 	return bigrams
+}
+
+// Each calls the supplied callback function for each
+// entry in the map.
+func (t *Trigrams) Each(f func(string, *Bigrams)) {
+	if t == nil {
+		return
+	}
+	for k, v := range t.trigrams {
+		f(k, v)
+	}
+}
+
+type jsonTrigrams struct {
+	Total, Len uint64
+	Trigrams   map[string]*Bigrams
+}
+
+// MarshalJSON implements JSON marshaling.
+func (t *Trigrams) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		jsonTrigrams{
+			Total:    t.total,
+			Len:      t.Len(),
+			Trigrams: t.trigrams,
+		})
+}
+
+// UnmarshalJSON implements JSON unmarshaling.
+func (t *Trigrams) UnmarshalJSON(bs []byte) error {
+	var tmp jsonTrigrams
+	if err := json.Unmarshal(bs, &tmp); err != nil {
+		return err
+	}
+	*t = Trigrams{
+		total:    tmp.Total,
+		trigrams: tmp.Trigrams,
+	}
+	return nil
 }
