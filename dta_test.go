@@ -48,8 +48,8 @@ func TestDTARead(t *testing.T) {
 		want       []string
 		skip, take int
 	}{
-		{[]string{"D.", "Henrici"}, 0, 2},
-		{[]string{"Leib-Medicus", "Der", "Studenten", ","}, 6, 4},
+		{[]string{"D", ".", "Henrici"}, 0, 3},
+		{[]string{"Leib", "-", "Medicus", "Der", "Studenten", ","}, 7, 6},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("%v", tc.want), func(t *testing.T) {

@@ -45,5 +45,7 @@ func DTAReadTokens(r io.Reader, f func(Token)) error {
 }
 
 func tokenize(t string, f func(Token)) {
-	f(Token(t))
+	for _, s := range new(splitter).split(t) {
+		f(Token(s))
+	}
 }
