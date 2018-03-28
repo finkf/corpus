@@ -18,6 +18,7 @@ func TestSplitter(t *testing.T) {
 		{"(abc)", []string{"(", "abc", ")"}},
 		{"03.09.1983", []string{"03", ".", "09", ".", "1983"}},
 		{"ochſen-fleiſch,", []string{"ochſen", "-", "fleiſch", ","}},
+		{"fuͤr,abc", []string{"fuͤr", ",", "abc"}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {

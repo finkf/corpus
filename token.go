@@ -43,11 +43,19 @@ func (t Token) Type() TokenType {
 // Everything that is not a word, or number is considered
 // to be punctuation.
 func runeType(r rune) TokenType {
-	if unicode.IsLetter(r) {
+	if IsLetter(r) {
 		return Word
 	}
 	if unicode.IsNumber(r) {
 		return Number
 	}
 	return Punctuation
+}
+
+// IsLetter returns true if the given
+// rune is to be considered a letter.
+// Any mark (unicode.IsMark(r) == true) and any letter
+// (unicode.IsLetter(r))return true.
+func IsLetter(r rune) bool {
+	return unicode.IsLetter(r) || unicode.IsMark(r)
 }

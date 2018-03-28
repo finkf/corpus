@@ -51,7 +51,7 @@ func (s *splitter) stop(b int, str string) {
 }
 
 func getState(r rune) state {
-	if unicode.IsLetter(r) {
+	if IsLetter(r) {
 		return alpha
 	}
 	if unicode.IsNumber(r) {
