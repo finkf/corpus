@@ -70,18 +70,28 @@ type jsonMap struct {
 
 // MarshalJSON implements JSON marshaling.
 func (m *Char3Grams) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
-		jsonMap{
-			Total:  m.Total(),
-			Len:    m.Len(),
-			NGrams: m.m,
-		})
+	return m.marshal(json.Marshal)
 }
 
 // UnmarshalJSON implements JSON unmarshaling.
 func (m *Char3Grams) UnmarshalJSON(bs []byte) error {
+	return m.unmarshal(bs, json.Unmarshal)
+}
+
+type marshalFunc func(interface{}) ([]byte, error)
+type unmarshalFunc func([]byte, interface{}) error
+
+func (m *Char3Grams) marshal(f marshalFunc) ([]byte, error) {
+	return f(jsonMap{
+		Total:  m.Total(),
+		Len:    m.Len(),
+		NGrams: m.m,
+	})
+}
+
+func (m *Char3Grams) unmarshal(bs []byte, f unmarshalFunc) error {
 	var tmp jsonMap
-	if err := json.Unmarshal(bs, &tmp); err != nil {
+	if err := f(bs, &tmp); err != nil {
 		return err
 	}
 	*m = Char3Grams{
@@ -192,7 +202,16 @@ type jsonUnigrams struct {
 
 // MarshalJSON implements JSON marshaling.
 func (u *Unigrams) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
+	return u.marshal(json.Marshal)
+}
+
+// UnmarshalJSON implements JSON unmarshaling.
+func (u *Unigrams) UnmarshalJSON(bs []byte) error {
+	return u.unmarshal(bs, json.Unmarshal)
+}
+
+func (u *Unigrams) marshal(f marshalFunc) ([]byte, error) {
+	return f(
 		jsonUnigrams{
 			Total:    u.total,
 			Len:      u.Len(),
@@ -200,10 +219,9 @@ func (u *Unigrams) MarshalJSON() ([]byte, error) {
 		})
 }
 
-// UnmarshalJSON implements JSON unmarshaling.
-func (u *Unigrams) UnmarshalJSON(bs []byte) error {
+func (u *Unigrams) unmarshal(bs []byte, f unmarshalFunc) error {
 	var tmp jsonUnigrams
-	if err := json.Unmarshal(bs, &tmp); err != nil {
+	if err := f(bs, &tmp); err != nil {
 		return err
 	}
 	*u = Unigrams{
@@ -307,7 +325,16 @@ type jsonBigrams struct {
 
 // MarshalJSON implements JSON marshaling.
 func (b *Bigrams) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
+	return b.marshal(json.Marshal)
+}
+
+// UnmarshalJSON implements JSON unmarshaling.
+func (b *Bigrams) UnmarshalJSON(bs []byte) error {
+	return b.unmarshal(bs, json.Unmarshal)
+}
+
+func (b *Bigrams) marshal(f marshalFunc) ([]byte, error) {
+	return f(
 		jsonBigrams{
 			Total:   b.total,
 			Len:     b.Len(),
@@ -315,10 +342,9 @@ func (b *Bigrams) MarshalJSON() ([]byte, error) {
 		})
 }
 
-// UnmarshalJSON implements JSON unmarshaling.
-func (b *Bigrams) UnmarshalJSON(bs []byte) error {
+func (b *Bigrams) unmarshal(bs []byte, f unmarshalFunc) error {
 	var tmp jsonBigrams
-	if err := json.Unmarshal(bs, &tmp); err != nil {
+	if err := f(bs, &tmp); err != nil {
 		return err
 	}
 	*b = Bigrams{
@@ -423,7 +449,16 @@ type jsonTrigrams struct {
 
 // MarshalJSON implements JSON marshaling.
 func (t *Trigrams) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
+	return t.marshal(json.Marshal)
+}
+
+// UnmarshalJSON implements JSON unmarshaling.
+func (t *Trigrams) UnmarshalJSON(bs []byte) error {
+	return t.unmarshal(bs, json.Unmarshal)
+}
+
+func (t *Trigrams) marshal(f marshalFunc) ([]byte, error) {
+	return f(
 		jsonTrigrams{
 			Total:    t.total,
 			Len:      t.Len(),
@@ -431,10 +466,9 @@ func (t *Trigrams) MarshalJSON() ([]byte, error) {
 		})
 }
 
-// UnmarshalJSON implements JSON unmarshaling.
-func (t *Trigrams) UnmarshalJSON(bs []byte) error {
+func (t *Trigrams) unmarshal(bs []byte, f unmarshalFunc) error {
 	var tmp jsonTrigrams
-	if err := json.Unmarshal(bs, &tmp); err != nil {
+	if err := f(bs, &tmp); err != nil {
 		return err
 	}
 	*t = Trigrams{
