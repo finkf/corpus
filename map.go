@@ -1,6 +1,8 @@
 package corpus
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // Char3Grams is a map character triple counts
 type Char3Grams struct {
