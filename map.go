@@ -1,6 +1,8 @@
 package corpus
 
 import (
+	"bytes"
+	"encoding/gob"
 	"encoding/json"
 )
 
@@ -80,8 +82,15 @@ func (m *Char3Grams) UnmarshalJSON(bs []byte) error {
 	return m.unmarshal(bs, json.Unmarshal)
 }
 
-type marshalFunc func(interface{}) ([]byte, error)
-type unmarshalFunc func([]byte, interface{}) error
+// GobEncode implement gob marhsaling.
+func (m *Char3Grams) GobEncode() ([]byte, error) {
+	return m.marshal(marshalGob)
+}
+
+// GobDecode implements gob unmarshaling.
+func (m *Char3Grams) GobDecode(bs []byte) error {
+	return m.unmarshal(bs, unmarshalGob)
+}
 
 func (m *Char3Grams) marshal(f marshalFunc) ([]byte, error) {
 	return f(jsonMap{
@@ -212,6 +221,16 @@ func (u *Unigrams) UnmarshalJSON(bs []byte) error {
 	return u.unmarshal(bs, json.Unmarshal)
 }
 
+// GobEncode implement gob marhsaling.
+func (u *Unigrams) GobEncode() ([]byte, error) {
+	return u.marshal(marshalGob)
+}
+
+// GobDecode implements gob unmarshaling.
+func (u *Unigrams) GobDecode(bs []byte) error {
+	return u.unmarshal(bs, unmarshalGob)
+}
+
 func (u *Unigrams) marshal(f marshalFunc) ([]byte, error) {
 	return f(
 		jsonUnigrams{
@@ -333,6 +352,16 @@ func (b *Bigrams) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON implements JSON unmarshaling.
 func (b *Bigrams) UnmarshalJSON(bs []byte) error {
 	return b.unmarshal(bs, json.Unmarshal)
+}
+
+// GobEncode implement gob marhsaling.
+func (b *Bigrams) GobEncode() ([]byte, error) {
+	return b.marshal(marshalGob)
+}
+
+// GobDecode implements gob unmarshaling.
+func (b *Bigrams) GobDecode(bs []byte) error {
+	return b.unmarshal(bs, unmarshalGob)
 }
 
 func (b *Bigrams) marshal(f marshalFunc) ([]byte, error) {
@@ -459,6 +488,16 @@ func (t *Trigrams) UnmarshalJSON(bs []byte) error {
 	return t.unmarshal(bs, json.Unmarshal)
 }
 
+// GobEncode implement gob marhsaling.
+func (t *Trigrams) GobEncode() ([]byte, error) {
+	return t.marshal(marshalGob)
+}
+
+// GobDecode implements gob unmarshaling.
+func (t *Trigrams) GobDecode(bs []byte) error {
+	return t.unmarshal(bs, unmarshalGob)
+}
+
 func (t *Trigrams) marshal(f marshalFunc) ([]byte, error) {
 	return f(
 		jsonTrigrams{
@@ -478,4 +517,19 @@ func (t *Trigrams) unmarshal(bs []byte, f unmarshalFunc) error {
 		trigrams: tmp.Trigrams,
 	}
 	return nil
+}
+
+type marshalFunc func(interface{}) ([]byte, error)
+type unmarshalFunc func([]byte, interface{}) error
+
+func marshalGob(data interface{}) ([]byte, error) {
+	buf := &bytes.Buffer{}
+	if err := gob.NewEncoder(buf).Encode(data); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func unmarshalGob(bs []byte, data interface{}) error {
+	return gob.NewDecoder(bytes.NewBuffer(bs)).Decode(data)
 }

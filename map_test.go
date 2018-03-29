@@ -2,6 +2,7 @@ package corpus
 
 import (
 	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -116,6 +117,29 @@ func TestChar3GramsJSONUnarshalError(t *testing.T) {
 			err := json.NewDecoder(strings.NewReader(tc.test)).Decode(&m)
 			if err == nil {
 				t.Fatalf("expected an error; got nil")
+			}
+		})
+	}
+}
+
+func TestChar3GramsGobMarshal(t *testing.T) {
+	tests := []struct{ test string }{
+		{"abcde"},
+		{"Waſſer"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.test, func(t *testing.T) {
+			a := NewChar3Grams().AddAll(tc.test)
+			buf := &bytes.Buffer{}
+			if err := gob.NewEncoder(buf).Encode(a); err != nil {
+				t.Fatalf("got error: %v", err)
+			}
+			var b Char3Grams
+			if err := gob.NewDecoder(buf).Decode(&b); err != nil {
+				t.Fatalf("got error: %v", err)
+			}
+			if !reflect.DeepEqual(a, &b) {
+				t.Fatalf("expected %v; got %v", a, b)
 			}
 		})
 	}
@@ -264,6 +288,32 @@ func TestTrigramsJSON(t *testing.T) {
 			}
 			v := new(Trigrams)
 			if err := json.NewDecoder(buf).Decode(v); err != nil {
+				t.Fatalf("got error: %v", err)
+			}
+			if !reflect.DeepEqual(u, v) {
+				t.Fatalf("expected %v; got %v", *u, *v)
+			}
+		})
+	}
+}
+
+func TestTrigramsGob(t *testing.T) {
+	tests := []struct{ test []string }{
+		{},
+		{[]string{"ab"}},
+		{[]string{"ab", "cd"}},
+		{[]string{"ab", "cd", "ef"}},
+		{[]string{"ab", "cd", "ef", "ab", "cd", "ef"}},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("%v", tc.test), func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			u := new(Trigrams).Add(tc.test...)
+			if err := gob.NewEncoder(buf).Encode(u); err != nil {
+				t.Fatalf("got error: %v", err)
+			}
+			v := new(Trigrams)
+			if err := gob.NewDecoder(buf).Decode(v); err != nil {
 				t.Fatalf("got error: %v", err)
 			}
 			if !reflect.DeepEqual(u, v) {
