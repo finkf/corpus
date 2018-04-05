@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 )
 
-// CharTrigrams is a map character triple counts
+// CharTrigrams is a map of character 3-gram counts.
 type CharTrigrams struct {
 	n uint64
 	m map[string]uint64
