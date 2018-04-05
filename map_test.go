@@ -47,8 +47,8 @@ func TestChar3GramMapSizes(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
-			m := NewChar3Grams()
-			m.AddAll(tc.test)
+			m := new(Char3Grams)
+			m.Add(tc.test)
 			if got := m.Len(); got != tc.len {
 				t.Fatalf("expected %d; got %d", tc.len, got)
 			}
@@ -69,11 +69,11 @@ func TestChar3GramMapAdd(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("%s/%s", tc.first, tc.second), func(t *testing.T) {
-			a := NewChar3Grams()
-			a.AddAll(tc.first)
-			b := NewChar3Grams()
-			b.AddAll(tc.second)
-			a.Add3Grams(b)
+			a := new(Char3Grams)
+			a.Add(tc.first)
+			b := new(Char3Grams)
+			b.Add(tc.second)
+			a.Append(b)
 			if got := a.Get(tc.test); got != tc.want {
 				t.Fatalf("expected %d; got %d", tc.want, got)
 			}
@@ -91,7 +91,7 @@ func TestChar3GramsJSONMarshal(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
-			a := NewChar3Grams().AddAll(tc.test)
+			a := new(Char3Grams)
 			buf := &bytes.Buffer{}
 			if err := json.NewEncoder(buf).Encode(a); err != nil {
 				t.Fatalf("got error: %v", err)
@@ -129,7 +129,7 @@ func TestChar3GramsGobMarshal(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
-			a := NewChar3Grams().AddAll(tc.test)
+			a := new(Char3Grams)
 			buf := &bytes.Buffer{}
 			if err := gob.NewEncoder(buf).Encode(a); err != nil {
 				t.Fatalf("got error: %v", err)
@@ -155,7 +155,7 @@ func TestChar3GramsEach(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
 			var got int
-			NewChar3Grams().AddAll(tc.test).Each(func(k string, v uint64) {
+			new(Char3Grams).Add(tc.test).Each(func(k string, v uint64) {
 				if strings.Contains(k, tc.search) {
 					got += int(v)
 				}
@@ -259,7 +259,7 @@ func TestAddTrigrams(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("%s %s %s", tc.f, tc.s, tc.t), func(t *testing.T) {
-			m := tc.test.AddTrigrams(tc.other)
+			m := tc.test.Append(tc.other)
 			if got := m.Get(tc.f).Get(tc.s).Get(tc.t); got != tc.count {
 				log.Printf("m: %v", *m)
 				t.Fatalf("expected %d; got %d", tc.count, got)

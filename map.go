@@ -12,16 +12,12 @@ type Char3Grams struct {
 	m map[string]uint64
 }
 
-// NewChar3Grams create a new Char3Grams instance.
-func NewChar3Grams() *Char3Grams {
-	return &Char3Grams{
-		m: make(map[string]uint64),
-	}
-}
-
-// AddAll adds all character 3-grams of the
+// Add adds all character 3-grams of the
 // supplied string into the map.
-func (m *Char3Grams) AddAll(str string) *Char3Grams {
+func (m *Char3Grams) Add(str string) *Char3Grams {
+	if m.m == nil {
+		m.m = make(map[string]uint64)
+	}
 	EachChar3Gram(str, func(str string) {
 		m.m[str]++
 		m.n++
@@ -29,8 +25,11 @@ func (m *Char3Grams) AddAll(str string) *Char3Grams {
 	return m
 }
 
-// Add3Grams adds the 3-grams of anohter map to this.
-func (m *Char3Grams) Add3Grams(o *Char3Grams) *Char3Grams {
+// Append appends the 3-grams of anohter map to this.
+func (m *Char3Grams) Append(o *Char3Grams) *Char3Grams {
+	if m.m == nil {
+		m.m = make(map[string]uint64)
+	}
 	for k, v := range o.m {
 		m.m[k] += v
 	}
@@ -40,6 +39,9 @@ func (m *Char3Grams) Add3Grams(o *Char3Grams) *Char3Grams {
 
 // Get returns the number of the supplied 3-gram.
 func (m *Char3Grams) Get(str string) uint64 {
+	if m == nil {
+		return 0
+	}
 	c, ok := m.m[str]
 	if !ok {
 		return 0
@@ -49,11 +51,17 @@ func (m *Char3Grams) Get(str string) uint64 {
 
 // Total returns the total number of 3-grams in the map.
 func (m *Char3Grams) Total() uint64 {
+	if m == nil {
+		return 0
+	}
 	return m.n
 }
 
 // Len return the number of different 3-grams in the map.
 func (m *Char3Grams) Len() uint64 {
+	if m == nil {
+		return 0
+	}
 	return uint64(len(m.m))
 }
 
@@ -276,19 +284,19 @@ func (b *Bigrams) Add(bs ...string) *Bigrams {
 	return b
 }
 
-// AddBigrams adds all bigrams to the map.
-func (b *Bigrams) AddBigrams(o *Bigrams) *Bigrams {
+// Append appends all the given bigrams to the map.
+func (b *Bigrams) Append(o *Bigrams) *Bigrams {
 	if o == nil {
 		return b
 	}
 	for k, v := range o.bigrams {
-		b.AddUnigrams(k, v)
+		b.AppendUnigrams(k, v)
 	}
 	return b
 }
 
-// AddUnigrams adds the unigrams for the given key into the map
-func (b *Bigrams) AddUnigrams(k string, u *Unigrams) *Bigrams {
+// AppendUnigrams appends the unigrams for the given key into the map.
+func (b *Bigrams) AppendUnigrams(k string, u *Unigrams) *Bigrams {
 	if b.bigrams == nil {
 		b.bigrams = make(map[string]*Unigrams)
 	}
@@ -410,26 +418,26 @@ func (t *Trigrams) Add(bs ...string) *Trigrams {
 	return t
 }
 
-// AddTrigrams adds the trigrams to the map.
-func (t *Trigrams) AddTrigrams(o *Trigrams) *Trigrams {
+// Append appends the given trigrams to the map.
+func (t *Trigrams) Append(o *Trigrams) *Trigrams {
 	if o == nil {
 		return t
 	}
 	for k, v := range o.trigrams {
-		t.AddBigrams(k, v)
+		t.AppendBigrams(k, v)
 	}
 	return t
 }
 
-// AddBigrams adds a key with its bigrams into the map.
-func (t *Trigrams) AddBigrams(k string, b *Bigrams) *Trigrams {
+// AppendBigrams adds a key with its bigrams into the map.
+func (t *Trigrams) AppendBigrams(k string, b *Bigrams) *Trigrams {
 	if t.trigrams == nil {
 		t.trigrams = make(map[string]*Bigrams)
 	}
 	if _, ok := t.trigrams[k]; !ok {
 		t.trigrams[k] = new(Bigrams)
 	}
-	t.trigrams[k].AddBigrams(b)
+	t.trigrams[k].Append(b)
 	t.total += b.total
 	return t
 }
