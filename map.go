@@ -6,15 +6,15 @@ import (
 	"encoding/json"
 )
 
-// Char3Grams is a map character triple counts
-type Char3Grams struct {
+// CharTrigrams is a map character triple counts
+type CharTrigrams struct {
 	n uint64
 	m map[string]uint64
 }
 
 // Add adds all character 3-grams of the
 // supplied string into the map.
-func (m *Char3Grams) Add(str string) *Char3Grams {
+func (m *CharTrigrams) Add(str string) *CharTrigrams {
 	if m.m == nil {
 		m.m = make(map[string]uint64)
 	}
@@ -26,7 +26,7 @@ func (m *Char3Grams) Add(str string) *Char3Grams {
 }
 
 // Append appends the 3-grams of anohter map to this.
-func (m *Char3Grams) Append(o *Char3Grams) *Char3Grams {
+func (m *CharTrigrams) Append(o *CharTrigrams) *CharTrigrams {
 	if m.m == nil {
 		m.m = make(map[string]uint64)
 	}
@@ -38,7 +38,7 @@ func (m *Char3Grams) Append(o *Char3Grams) *Char3Grams {
 }
 
 // Get returns the number of the supplied 3-gram.
-func (m *Char3Grams) Get(str string) uint64 {
+func (m *CharTrigrams) Get(str string) uint64 {
 	if m == nil {
 		return 0
 	}
@@ -50,7 +50,7 @@ func (m *Char3Grams) Get(str string) uint64 {
 }
 
 // Total returns the total number of 3-grams in the map.
-func (m *Char3Grams) Total() uint64 {
+func (m *CharTrigrams) Total() uint64 {
 	if m == nil {
 		return 0
 	}
@@ -58,7 +58,7 @@ func (m *Char3Grams) Total() uint64 {
 }
 
 // Len return the number of different 3-grams in the map.
-func (m *Char3Grams) Len() uint64 {
+func (m *CharTrigrams) Len() uint64 {
 	if m == nil {
 		return 0
 	}
@@ -66,7 +66,7 @@ func (m *Char3Grams) Len() uint64 {
 }
 
 // Each iterates over all character 3-grams in this map.
-func (m *Char3Grams) Each(f func(string, uint64)) {
+func (m *CharTrigrams) Each(f func(string, uint64)) {
 	if m == nil {
 		return
 	}
@@ -81,26 +81,26 @@ type jsonMap struct {
 }
 
 // MarshalJSON implements JSON marshaling.
-func (m *Char3Grams) MarshalJSON() ([]byte, error) {
+func (m *CharTrigrams) MarshalJSON() ([]byte, error) {
 	return m.marshal(json.Marshal)
 }
 
 // UnmarshalJSON implements JSON unmarshaling.
-func (m *Char3Grams) UnmarshalJSON(bs []byte) error {
+func (m *CharTrigrams) UnmarshalJSON(bs []byte) error {
 	return m.unmarshal(bs, json.Unmarshal)
 }
 
 // GobEncode implement gob marhsaling.
-func (m *Char3Grams) GobEncode() ([]byte, error) {
+func (m *CharTrigrams) GobEncode() ([]byte, error) {
 	return m.marshal(marshalGob)
 }
 
 // GobDecode implements gob unmarshaling.
-func (m *Char3Grams) GobDecode(bs []byte) error {
+func (m *CharTrigrams) GobDecode(bs []byte) error {
 	return m.unmarshal(bs, unmarshalGob)
 }
 
-func (m *Char3Grams) marshal(f marshalFunc) ([]byte, error) {
+func (m *CharTrigrams) marshal(f marshalFunc) ([]byte, error) {
 	return f(jsonMap{
 		Total:  m.Total(),
 		Len:    m.Len(),
@@ -108,12 +108,12 @@ func (m *Char3Grams) marshal(f marshalFunc) ([]byte, error) {
 	})
 }
 
-func (m *Char3Grams) unmarshal(bs []byte, f unmarshalFunc) error {
+func (m *CharTrigrams) unmarshal(bs []byte, f unmarshalFunc) error {
 	var tmp jsonMap
 	if err := f(bs, &tmp); err != nil {
 		return err
 	}
-	*m = Char3Grams{
+	*m = CharTrigrams{
 		n: tmp.Total,
 		m: tmp.NGrams,
 	}

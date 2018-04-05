@@ -47,7 +47,7 @@ func TestChar3GramMapSizes(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
-			m := new(Char3Grams)
+			m := new(CharTrigrams)
 			m.Add(tc.test)
 			if got := m.Len(); got != tc.len {
 				t.Fatalf("expected %d; got %d", tc.len, got)
@@ -69,9 +69,9 @@ func TestChar3GramMapAdd(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("%s/%s", tc.first, tc.second), func(t *testing.T) {
-			a := new(Char3Grams)
+			a := new(CharTrigrams)
 			a.Add(tc.first)
-			b := new(Char3Grams)
+			b := new(CharTrigrams)
 			b.Add(tc.second)
 			a.Append(b)
 			if got := a.Get(tc.test); got != tc.want {
@@ -84,19 +84,19 @@ func TestChar3GramMapAdd(t *testing.T) {
 	}
 }
 
-func TestChar3GramsJSONMarshal(t *testing.T) {
+func TestCharTrigramsJSONMarshal(t *testing.T) {
 	tests := []struct{ test string }{
 		{"abcde"},
 		{"Waſſer"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
-			a := new(Char3Grams)
+			a := new(CharTrigrams)
 			buf := &bytes.Buffer{}
 			if err := json.NewEncoder(buf).Encode(a); err != nil {
 				t.Fatalf("got error: %v", err)
 			}
-			var b Char3Grams
+			var b CharTrigrams
 			if err := json.NewDecoder(buf).Decode(&b); err != nil {
 				t.Fatalf("got error: %v", err)
 			}
@@ -107,13 +107,13 @@ func TestChar3GramsJSONMarshal(t *testing.T) {
 	}
 }
 
-func TestChar3GramsJSONUnarshalError(t *testing.T) {
+func TestCharTrigramsJSONUnarshalError(t *testing.T) {
 	tests := []struct{ test string }{
 		{`{"Total":"1","NGrams":{"abc":1}}`},
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
-			var m Char3Grams
+			var m CharTrigrams
 			err := json.NewDecoder(strings.NewReader(tc.test)).Decode(&m)
 			if err == nil {
 				t.Fatalf("expected an error; got nil")
@@ -122,19 +122,19 @@ func TestChar3GramsJSONUnarshalError(t *testing.T) {
 	}
 }
 
-func TestChar3GramsGobMarshal(t *testing.T) {
+func TestCharTrigramsGobMarshal(t *testing.T) {
 	tests := []struct{ test string }{
 		{"abcde"},
 		{"Waſſer"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
-			a := new(Char3Grams)
+			a := new(CharTrigrams)
 			buf := &bytes.Buffer{}
 			if err := gob.NewEncoder(buf).Encode(a); err != nil {
 				t.Fatalf("got error: %v", err)
 			}
-			var b Char3Grams
+			var b CharTrigrams
 			if err := gob.NewDecoder(buf).Decode(&b); err != nil {
 				t.Fatalf("got error: %v", err)
 			}
@@ -145,7 +145,7 @@ func TestChar3GramsGobMarshal(t *testing.T) {
 	}
 }
 
-func TestChar3GramsEach(t *testing.T) {
+func TestCharTrigramsEach(t *testing.T) {
 	tests := []struct {
 		test, search string
 		want         int
@@ -155,7 +155,7 @@ func TestChar3GramsEach(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
 			var got int
-			new(Char3Grams).Add(tc.test).Each(func(k string, v uint64) {
+			new(CharTrigrams).Add(tc.test).Each(func(k string, v uint64) {
 				if strings.Contains(k, tc.search) {
 					got += int(v)
 				}
