@@ -1,29 +1,32 @@
-package corpus
+package corpus_test
 
-import "testing"
+import (
+	"testing"
 
-func TestToken(t *testing.T) {
+	"github.com/finkf/corpus"
+)
+
+func TestTokenTypeOf(t *testing.T) {
 	tests := []struct {
-		token string
-		typ   TokenType
+		token                              string
+		upper, lower, letter, digit, punct bool
 	}{
-		{"", Empty},
-		{"word", Word},
-		{"123", Number},
-		{",", Punctuation},
-		{"mixed-word", Mixed},
-		{"Caſparis", Word},
-		{"Ängste", Word},
+		{"simple", false, true, true, false, false},
+		{"Simple", true, true, true, false, false},
+		{"0815", false, false, false, true, false},
+		{"Simple-token", true, true, true, false, true},
+		{"SIMPLE", true, false, true, false, false},
+		{"ᾙallo", true, true, true, false, false},
+		{"Waſſe̅r", true, true, true, false, false},
 	}
 	for _, tc := range tests {
 		t.Run(tc.token, func(t *testing.T) {
-			tt := Token(tc.token)
-			if got := tt.Type(); got != tc.typ {
-				t.Fatalf("expected %d; got %d", got, tc.typ)
-			}
-			if got := string(tt); got != tc.token {
-				t.Fatalf("expeceted %q; got %q", tc.token, got)
-			}
+			typ := corpus.TokenTypeOf(tc.token)
+			checkType(t, "upper", tc.upper, typ.UpperCaseLetter())
+			checkType(t, "lower", tc.lower, typ.LowerCaseLetter())
+			checkType(t, "letter", tc.letter, typ.Letter())
+			checkType(t, "digit", tc.digit, typ.Digit())
+			checkType(t, "punctuation", tc.punct, typ.Punctuation())
 		})
 	}
 }

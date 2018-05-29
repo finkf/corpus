@@ -1,61 +1,77 @@
 package corpus
 
-import "unicode"
+import (
+	"unicode"
+)
 
-// Tokener defines the interface for things that read
-// a stream of tokens. If an error occurs, Err returns a non-nil value.
-type Tokener interface {
-	Tokens(func(Token)) error
+// Tokenizer defines the interface for tokenizers.
+// The given callback function should be called for every
+// non-empty token. Tokens for which the given callback is called
+// must not contain any whitespace.
+type Tokenizer interface {
+	Tokenize(func(string)) error
 }
 
 // TokenType represents the type of a token
 type TokenType int
 
-// Different token types
+// The different types of tokens.
 const (
-	Empty TokenType = 1 << iota
-	Word
-	Number
-	Punctuation
-	Mixed
+	ucletter TokenType = 1 << iota
+	lcletter
+	digit
+	punctuation
 )
 
-// Token represents a token.
-type Token string
-
-// Type returns the TokenType of the token.
-func (t Token) Type() TokenType {
-	if len(t) == 0 {
-		return Empty
-	}
-	typ := Empty
-	for _, r := range t {
-		tmp := runeType(r)
-		if typ != Empty && typ != tmp {
-			return Mixed
-		}
-		typ = tmp
-	}
-	return typ
+// Letter returns true if the token type denotes letters.
+func (t TokenType) Letter() bool {
+	return t.UpperCaseLetter() || t.LowerCaseLetter()
 }
 
-// runeType returns the type of a rune.
-// Everything that is not a word, or number is considered
-// to be punctuation.
-func runeType(r rune) TokenType {
-	if IsLetter(r) {
-		return Word
-	}
-	if unicode.IsNumber(r) {
-		return Number
-	}
-	return Punctuation
+// UpperCaseLetter returns true if the token type denotes uppercase letters.
+func (t TokenType) UpperCaseLetter() bool {
+	return (t & ucletter) != 0
 }
 
-// IsLetter returns true if the given
-// rune is to be considered a letter.
-// Any mark (unicode.IsMark(r) == true) and any letter
-// (unicode.IsLetter(r))return true.
-func IsLetter(r rune) bool {
-	return unicode.IsLetter(r) || unicode.IsMark(r)
+// LowerCaseLetter returns true if the token type denotes uppercase letters.
+func (t TokenType) LowerCaseLetter() bool {
+	return (t & lcletter) != 0
+}
+
+// Digit returns true if the token type denotes digits.
+func (t TokenType) Digit() bool {
+	return (t & digit) != 0
+}
+
+// Punctuation returns true if the token type denotes
+// punctuation characters.
+func (t TokenType) Punctuation() bool {
+	return (t & punctuation) != 0
+}
+
+// TokenTypeOf returns the token type of a given string.
+func TokenTypeOf(str string) TokenType {
+	var t TokenType
+	for _, r := range str {
+		t |= getFlagType(r)
+	}
+	return t
+}
+
+func getFlagType(r rune) TokenType {
+	if unicode.In(r, unicode.Digit) {
+		return digit
+	}
+	if unicode.In(r, unicode.Lower) {
+		return lcletter
+	}
+	if unicode.In(r, unicode.Title, unicode.Upper) {
+		return ucletter
+	}
+	// Marks, nonspacing are considered
+	// neither upper nor lower case letter but also not punctuation
+	if unicode.In(r, unicode.Mn) {
+		return 0
+	}
+	return punctuation
 }

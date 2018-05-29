@@ -1,3 +1,5 @@
+// +build ignore
+
 package corpus
 
 import (
@@ -22,6 +24,16 @@ func (m *CharTrigrams) Add(str string) *CharTrigrams {
 		m.m[str]++
 		m.n++
 	})
+	return m
+}
+
+// AddCount adds the count for the given trigram to this map.
+func (m *CharTrigrams) AddCount(str string, n uint64) *CharTrigrams {
+	if m.m == nil {
+		m.m = make(map[string]uint64)
+	}
+	m.m[str] += n
+	m.n += n
 	return m
 }
 
