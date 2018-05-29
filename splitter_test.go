@@ -1,10 +1,10 @@
-// +build ignore
-
-package corpus
+package corpus_test
 
 import (
 	"reflect"
 	"testing"
+
+	"github.com/finkf/corpus"
 )
 
 func TestSplitter(t *testing.T) {
@@ -24,7 +24,7 @@ func TestSplitter(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.test, func(t *testing.T) {
-			got := new(splitter).split(tc.test)
+			got := corpus.Split(tc.test)
 			if !reflect.DeepEqual(got, tc.want) {
 				t.Fatalf("expected %v; got %v", tc.want, got)
 			}

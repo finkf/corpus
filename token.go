@@ -53,12 +53,12 @@ func (t TokenType) Punctuation() bool {
 func TokenTypeOf(str string) TokenType {
 	var t TokenType
 	for _, r := range str {
-		t |= getFlagType(r)
+		t |= runeFlagType(r)
 	}
 	return t
 }
 
-func getFlagType(r rune) TokenType {
+func runeFlagType(r rune) TokenType {
 	if unicode.In(r, unicode.Digit) {
 		return digit
 	}
