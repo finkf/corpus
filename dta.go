@@ -65,8 +65,8 @@ func (dta DTA) Tokenize(f func(string)) error {
 
 // Close the underlying reader of the DTA handle.
 func (dta DTA) Close() error {
-	switch c := dta.r.(type) {
-	case io.Closer:
+	c, ok := dta.r.(io.Closer)
+	if ok {
 		return c.Close()
 	}
 	return nil

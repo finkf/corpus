@@ -13,9 +13,18 @@ func init() {
 	flag.BoolVar(&update, "update", false, "update gold file(s)")
 }
 
-func dtaToString(dta DTA) string {
+func dtaToString(path string) string {
+	dta, err := NewDTAFile(path)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if e := dta.Close(); e != nil {
+			panic(e)
+		}
+	}()
 	var str string
-	err := dta.Tokenize(func(token string) {
+	err = dta.Tokenize(func(token string) {
 		str += token + "\n"
 	})
 	if err != nil {
@@ -25,17 +34,8 @@ func dtaToString(dta DTA) string {
 }
 
 func updateDTAGoldFile() {
-	dta, err := NewDTAFile("testdata/dta.xml")
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		if e := dta.Close(); e != nil {
-			panic(e)
-		}
-	}()
-	gold := dtaToString(dta)
-	if err = ioutil.WriteFile("testdata/dta.gold.txt", []byte(gold), os.ModePerm); err != nil {
+	gold := dtaToString("testdata/dta.xml")
+	if err := ioutil.WriteFile("testdata/dta.gold.txt", []byte(gold), os.ModePerm); err != nil {
 		panic(err)
 	}
 }
@@ -48,11 +48,7 @@ func TestDTATokenizeGoldFile(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	dta, err := NewDTAFile("testdata/dta.xml")
-	if err != nil {
-		panic(err)
-	}
-	if got := dtaToString(dta); string(gold) != got {
+	if got := dtaToString("testdata/dta.xml"); string(gold) != got {
 		t.Errorf("expected\n%sgot\n%s", gold, got)
 	}
 }
