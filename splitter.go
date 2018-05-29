@@ -63,3 +63,11 @@ func getState(s state, r rune) state {
 func Split(str string) []string {
 	return new(splitter).split(str)
 }
+
+// tokenize splits the given string and calls the
+// given callback for each token.
+func tokenize(str string, f func(string)) {
+	for _, token := range Split(str) {
+		f(token)
+	}
+}

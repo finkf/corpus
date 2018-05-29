@@ -1,93 +1,58 @@
-// +build ignore
-
 package corpus
 
 import (
-	"fmt"
-	"io"
+	"flag"
 	"io/ioutil"
-	"reflect"
+	"os"
 	"testing"
-	"testing/iotest"
-
-	"github.com/pkg/errors"
 )
 
-func closeError(t *testing.T) io.ReadCloser {
-	return errCloser(openDTATestFile(t))
+var update bool
+
+func init() {
+	flag.BoolVar(&update, "update", false, "update gold file(s)")
 }
 
-func readError(t *testing.T) io.ReadCloser {
-	return ioutil.NopCloser(iotest.TimeoutReader(openDTATestFile(t)))
-}
-
-func readAndCloseError(t *testing.T) io.ReadCloser {
-	return errCloser(readError(t))
-}
-
-func TestDTAErrors(t *testing.T) {
-	tests := []struct {
-		reader func(*testing.T) io.ReadCloser
-		want   error
-	}{
-		{closeError, errClose},
-		{readError, iotest.ErrTimeout},
-		{readAndCloseError, iotest.ErrTimeout},
+func dtaToString(dta DTA) string {
+	var str string
+	err := dta.Tokenize(func(token string) {
+		str += token + "\n"
+	})
+	if err != nil {
+		panic(err)
 	}
-	for _, tc := range tests {
-		t.Run(fmt.Sprintf("%T", tc.reader), func(t *testing.T) {
-			r := tc.reader(t)
-			err := DTAReadTokensAndClose(r, func(Token) {})
-			if errors.Cause(err) != tc.want {
-				t.Fatalf("expected %s; got %v", tc.want, err)
-			}
-		})
-	}
+	return str
 }
 
-func TestDTARead(t *testing.T) {
-	tests := []struct {
-		want       []string
-		skip, take int
-	}{
-		{[]string{"D", ".", "Henrici"}, 0, 3},
-		{[]string{"Leib", "-", "Medicus", "Der", "Studenten", ","}, 7, 6},
+func updateDTAGoldFile() {
+	dta, err := NewDTAFile("testdata/dta.xml")
+	if err != nil {
+		panic(err)
 	}
-	for _, tc := range tests {
-		t.Run(fmt.Sprintf("%v", tc.want), func(t *testing.T) {
-			r := openDTATestFile(t)
-			var got []string
-			var skipped, taken int
-			err := DTAReadTokensAndClose(r, func(t Token) {
-				if skipped < tc.skip {
-					skipped++
-					return
-				}
-				if taken < tc.take {
-					got = append(got, string(t))
-					taken++
-
-				}
-			})
-			if err != nil {
-				t.Fatalf("got error: %v", err)
-			}
-			if !reflect.DeepEqual(got, tc.want) {
-				t.Fatalf("expected %v; got %v", tc.want, got)
-			}
-		})
+	defer func() {
+		if e := dta.Close(); e != nil {
+			panic(e)
+		}
+	}()
+	gold := dtaToString(dta)
+	if err = ioutil.WriteFile("testdata/dta.gold.txt", []byte(gold), os.ModePerm); err != nil {
+		panic(err)
 	}
 }
 
-func errCloser(r io.Reader) io.ReadCloser {
-	return errCloserS{r}
+func TestDTATokenizeGoldFile(t *testing.T) {
+	if update {
+		updateDTAGoldFile()
+	}
+	gold, err := ioutil.ReadFile("testdata/dta.gold.txt")
+	if err != nil {
+		panic(err)
+	}
+	dta, err := NewDTAFile("testdata/dta.xml")
+	if err != nil {
+		panic(err)
+	}
+	if got := dtaToString(dta); string(gold) != got {
+		t.Errorf("expected\n%sgot\n%s", gold, got)
+	}
 }
-
-type errCloserS struct {
-	r io.Reader
-}
-
-var errClose = errors.New("close")
-
-func (r errCloserS) Read(bs []byte) (int, error) { return r.r.Read(bs) }
-func (r errCloserS) Close() error                { return errClose }

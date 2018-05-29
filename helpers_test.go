@@ -10,3 +10,7 @@ func checkType(t *testing.T, name string, want, got bool) {
 		t.Errorf("expected %s = %t; got %t", name, want, got)
 	}
 }
+
+func openDTATestFile(t *testing.T) {
+	t.Helper()
+}
